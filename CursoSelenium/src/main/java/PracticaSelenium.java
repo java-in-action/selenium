@@ -1,7 +1,12 @@
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebDriverException;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.By;
+import org.openqa.selenium.ElementNotSelectableException;
+import org.openqa.selenium.ElementNotVisibleException;
+import org.openqa.selenium.InvalidSelectorException;
 import org.openqa.selenium.Keys;
+import org.openqa.selenium.NoAlertPresentException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
@@ -15,6 +20,11 @@ import com.google.common.base.Function;
 
 import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.NoSuchFrameException;
+import org.openqa.selenium.NoSuchSessionException;
+import org.openqa.selenium.NoSuchWindowException;
+import org.openqa.selenium.StaleElementReferenceException;
+import org.openqa.selenium.TimeoutException;
 import junit.framework.Assert;
 
 import java.util.List;
@@ -27,22 +37,63 @@ public class PracticaSelenium {
 	public void prueba() {
 		System.setProperty("webdriver.chrome.driver", "C://selenium//chromedriver_win32//chromedriver.exe");
 		WebDriver driver = new ChromeDriver();
-		//Implicit Wait
-		//driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+		// Implicit Wait
+		driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
 
-		testBasicNavigation(driver);
-		testCheckBox(driver);
-		testRadioButton(driver);
-		testDropdown(driver);
-		testDragDrop(driver);
-		testMultipleSelection(driver);
-		testListaElementos(driver);
-		testExplicitAndFluentWait(driver);
-		testAlert(driver);
-		testConfirm(driver);
-		testPrompt(driver);
-		testFrame(driver);
-		
+//		testBasicNavigation(driver);
+//		testCheckBox(driver);
+//		testRadioButton(driver);
+//		testDropdown(driver);
+//		testDragDrop(driver);
+//		testMultipleSelection(driver);
+//		testListaElementos(driver);
+//		testExplicitAndFluentWait(driver);
+//		testAlert(driver);
+//		testConfirm(driver);
+//		testPrompt(driver);
+//		testFrame(driver);
+		handligException(driver);
+
+	}
+
+	public void handligException(WebDriver driver) {
+		try {
+			// Launch website
+			driver.navigate().to("https://www.google.com/");
+			// Maximize the browser
+			driver.manage().window().maximize();
+
+			// Buscar Textbox y Escribir 2+2
+			WebElement googleTextBox = driver.findElement(By.name("q"));
+			googleTextBox.sendKeys("2+2", Keys.RETURN);
+			
+			WebDriverWait wait = new WebDriverWait(driver, 10);
+			wait.until(ExpectedConditions.presenceOfElementLocated(By.id("cwos")));
+			try {
+				driver.findElement(By.id("submit")).click();
+			} catch (NoSuchElementException e) {
+				System.out.println("NoSuchElementException. Elemento no encontrado");
+			} catch (NoSuchWindowException e) {
+				System.out.println("NoSuchWindowException. Ventana no encontrada");
+			} catch (NoSuchFrameException e) {
+				System.out.println("NoSuchFrameException. Frame no encontrado");
+			} catch (NoAlertPresentException e) {
+				System.out.println("NoAlertPresentException. Alerta no encontrada");
+			} catch (ElementNotVisibleException e) {
+				System.out.println("ElementNotVisibleException. Elemento no visitble");
+			} catch (ElementNotSelectableException e) {
+				System.out.println("ElementNotSelectableException.Elemento no Seleccionable");
+			} catch (NoSuchSessionException e) {
+				System.out.println("NoSuchSessionException. Sin Sesion");
+			} catch (StaleElementReferenceException e) {
+				System.out.println("StaleElementReferenceException. Eemento no actualizado");
+			} catch (WebDriverException e) {
+				System.out.println("WebDriverException.");
+			}
+
+		} catch (TimeoutException e) {
+			System.out.println("WebDriver couldn’t locate the element");
+		}
 	}
 
 	public void testBasicNavigation(WebDriver driver) {
@@ -125,16 +176,11 @@ public class PracticaSelenium {
 		Select dropdown = new Select(driver.findElement(By.id("ccompound")));
 		dropdown.selectByVisibleText("continuously");
 
-		// Tambien se puede usar dropdown.selectByIndex(1) para seleccionar elementos,
-		// donde 1 pude ser cualquier
+		// Tambien se puede usar para seleccionar elementos el index
+		// dropdown.selectByIndex(1);
 		// otra posicion, iniciando el indice en 0
 		// Asi como tambien seleccionar por valor
 		// dropdown.selectByValue("annually");
-
-		// Validaciones
-		System.out.println("IsSelected " + driver.findElement(By.id("ccompound")).isSelected());
-		System.out.println("IsEnabled " + driver.findElement(By.id("ccompound")).isEnabled());
-		System.out.println("IsDisplayed " + driver.findElement(By.id("ccompound")).isDisplayed());
 
 	}
 
@@ -185,7 +231,7 @@ public class PracticaSelenium {
 
 		List<WebElement> links = driver.findElements(By.tagName("a"));
 		System.out.println("Number of Links in the Page is " + links.size());
-		for (int i = 1; i <= links.size(); i = i + 1) {
+		for (int i = 0; i <= links.size(); i = i + 1) {
 			System.out.println("Name of Link# " + i + links.get(i).getText());
 		}
 	}
@@ -197,14 +243,12 @@ public class PracticaSelenium {
 		driver.findElement(By.id("ControlOptionsTopHolder_lbSelectionMode_B-1")).click();
 
 		WebDriverWait explicitWait = new WebDriverWait(driver, 10);
-		WebElement element=explicitWait.until(ExpectedConditions.elementToBeClickable(By.id("ControlOptionsTopHolder_lbSelectionMode_DDD_L_LBI1T0")));
-	    element.click();
+		WebElement element = explicitWait.until(
+				ExpectedConditions.elementToBeClickable(By.id("ControlOptionsTopHolder_lbSelectionMode_DDD_L_LBI1T0")));
+		element.click();
 
-		
-		Wait<WebDriver> fluentWait = new FluentWait<WebDriver>(driver)
-			       .withTimeout(30, TimeUnit.SECONDS)
-			       .pollingEvery(5, TimeUnit.SECONDS)
-			       .ignoring(NoSuchElementException.class);
+		Wait<WebDriver> fluentWait = new FluentWait<WebDriver>(driver).withTimeout(30, TimeUnit.SECONDS)
+				.pollingEvery(5, TimeUnit.SECONDS).ignoring(NoSuchElementException.class);
 
 		WebElement select = fluentWait.until(new Function<WebDriver, WebElement>() {
 			public WebElement apply(WebDriver driver) {
@@ -308,10 +352,7 @@ public class PracticaSelenium {
 
 		// Nos cambiamos de frame por Elemento
 		WebElement resultFrame = driver.findElement(By.id("iframeResult"));
-		driver.switchTo().frame("iframeResult");
-
-		// Nos regresamos a la pagina principal
-		driver.switchTo().defaultContent();
+		driver.switchTo().frame(resultFrame);
 
 		// Buscamos Boton Tryit y damos click
 		WebElement promptButton = driver.findElement(By.cssSelector("html>body>button"));
